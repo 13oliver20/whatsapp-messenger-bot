@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Messenger - Envío Automatizado</title>
+    <meta name="description" content="Aplicación para enviar mensajes automatizados de WhatsApp a múltiples contactos">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="status-bar" id="statusBar">
+                <span class="status-dot disconnected"></span>
+                <span class="status-text">Desconectado</span>
+            </div>
+
+            <div id="qrSection" class="qr-section" style="display: none;">
+                <div class="card qr-card">
+                    <h3>Escanea el código QR</h3>
+                    <p>Abre WhatsApp en tu celular y escanea este código para conectar el sistema.</p>
+                    <div id="qrContainer" class="qr-container">
+                        <div class="qr-placeholder">
+                            <span class="spinner"></span>
+                            <p>Generando QR...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" fill="url(#gradient)" stroke="white" stroke-width="2" />
+                    <path
+                        d="M20 10C14.477 10 10 14.477 10 20C10 21.89 10.525 23.66 11.438 25.168L10.5 29.5L15.032 28.592C16.485 29.425 18.188 30 20 30C25.523 30 30 25.523 30 20C30 14.477 25.523 10 20 10Z"
+                        fill="white" />
+                    <path d="M16 18L18 20L24 14" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#25D366" />
+                            <stop offset="100%" stop-color="#128C7E" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>WhatsApp Messenger</h1>
+            </div>
+            <p class="subtitle">Envía mensajes automatizados a múltiples contactos</p>
+        </header>
+
+        <div class="card">
+            <form id="messageForm">
+                <div class="form-group">
+                    <label>
+                        <span class="label-text">Números de Teléfono (Perú)</span>
+                        <span class="label-hint">Asumiremos automáticamente el prefijo +51</span>
+                    </label>
+                    <div id="phoneInputsContainer" class="phone-inputs-container">
+                        <div class="phone-input-row">
+                            <span class="country-prefix">+51</span>
+                            <input type="tel" class="phone-input" placeholder="987 654 321" required>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add-phone" id="addPhoneInputBtn">
+                        <span class="btn-icon">➕</span>
+                        <span>Añadir otro número</span>
+                    </button>
+                    <small class="help-text">
+                        💡 Introduce el número de 9 dígitos.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="label-text">Crear Nuevo Mensaje</span>
+                        <span class="label-hint">Agrega mensajes personalizados</span>
+                    </label>
+                    <input type="text" id="messageName"
+                        placeholder="Nombre del mensaje (ej: Bienvenida, Promoción, etc.)" class="message-name-input">
+                    <textarea id="messageContent" rows="3" placeholder="Escribe el contenido del mensaje aquí..."
+                        class="message-content-input"></textarea>
+                    <button type="button" class="btn-add-message" id="addMessageBtn">
+                        <span class="btn-icon">➕</span>
+                        <span>Agregar Mensaje</span>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="label-text">Mensajes Disponibles</span>
+                        <span class="label-hint">Selecciona los mensajes a enviar</span>
+                    </label>
+                    <div class="messages-list" id="messagesList">
+                        <!-- Los mensajes se agregarán dinámicamente aquí -->
+                    </div>
+                    <small class="help-text" id="selectedCount">
+                        💡 Selecciona uno o más mensajes para enviar
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-send" id="sendButton">
+                    <span class="btn-icon">📤</span>
+                    <span class="btn-text">Enviar Mensajes</span>
+                    <span class="btn-loader" style="display: none;">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <div class="card logs-card" id="logsCard" style="display: none;">
+            <div class="logs-header">
+                <h2>Estado de Envío</h2>
+                <div class="stats" id="stats">
+                    <span class="stat-item stat-success">
+                        <span class="stat-icon">✅</span>
+                        <span id="successCount">0</span> exitosos
+                    </span>
+                    <span class="stat-item stat-error">
+                        <span class="stat-icon">❌</span>
+                        <span id="failureCount">0</span> fallidos
+                    </span>
+                </div>
+            </div>
+            <div class="logs-container" id="logsContainer">
+                <!-- Los logs se agregarán dinámicamente aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
