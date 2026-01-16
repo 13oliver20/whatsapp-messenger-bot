@@ -6,3 +6,5 @@ cmds = ["npm install"]
 
 [start]
 cmd = "node server.js"
+
+# Triggering optimized build
