@@ -28,6 +28,7 @@ const client = new Client({
     remotePath: REMOTE_PATH
   },
   puppeteer: {
+    executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
     headless: true,
     args: [
       '--no-sandbox',
@@ -37,7 +38,6 @@ const client = new Client({
       '--no-first-run',
       '--no-zygote',
       '--disable-gpu',
-      '--disable-setuid-sandbox',
       '--disable-software-rasterizer'
     ]
   }

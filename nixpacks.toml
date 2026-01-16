@@ -1,6 +1,9 @@
 [phases.setup]
 nixPkgs = ["...", "chromium", "glib", "nss", "nspr", "atk", "at-spi2-atk", "libdrm", "expat", "libxcb", "libxshmfence", "libxcomposite", "libxdamage", "libxext", "libxfixes", "libxrandr", "mesa", "dbus", "libudev0-or-libudev1"]
 
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+
 [phases.build]
 cmds = ["npm install"]
 
