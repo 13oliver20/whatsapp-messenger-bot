@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["...", "chromium", "glib", "nss", "nspr", "atk", "at-spi2-atk", "libdrm", "expat", "libxcb", "libxshmfence", "libxcomposite", "libxdamage", "libxext", "libxfixes", "libxrandr", "mesa"]
+nixPkgs = ["...", "chromium", "glib", "nss", "nspr", "atk", "at-spi2-atk", "libdrm", "expat", "libxcb", "libxshmfence", "libxcomposite", "libxdamage", "libxext", "libxfixes", "libxrandr", "mesa", "dbus", "libudev0-or-libudev1"]
 
 [phases.build]
 cmds = ["npm install"]
@@ -7,4 +7,4 @@ cmds = ["npm install"]
 [start]
 cmd = "node server.js"
 
-# Triggering optimized build
+# Final library fix for Chromium
