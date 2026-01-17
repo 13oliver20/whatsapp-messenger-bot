@@ -8,6 +8,7 @@ const messageNameInput = document.getElementById('messageName');
 const statusBar = document.getElementById('statusBar');
 const statusDot = statusBar.querySelector('.status-dot');
 const statusText = statusBar.querySelector('.status-text');
+const reconnectBtn = document.getElementById('reconnectBtn');
 const qrSection = document.getElementById('qrSection');
 const qrContainer = document.getElementById('qrContainer');
 const messageContentInput = document.getElementById('messageContent');
@@ -576,11 +577,13 @@ function updateConnectionUI(status, qr) {
         case 'ready':
             statusText.textContent = 'Conectado';
             qrSection.style.display = 'none';
+            reconnectBtn.style.display = 'none';
             sendButton.disabled = false;
             break;
         case 'qr_ready':
             statusText.textContent = 'Esperando QR';
             qrSection.style.display = 'block';
+            reconnectBtn.style.display = 'none';
             if (qr) {
                 qrContainer.innerHTML = `<img src="${qr}" alt="WhatsApp QR Code">`;
             }
@@ -589,14 +592,49 @@ function updateConnectionUI(status, qr) {
         case 'loading':
             statusText.textContent = 'Iniciando...';
             qrSection.style.display = 'none';
+            reconnectBtn.style.display = 'none';
             sendButton.disabled = true;
             break;
         default:
             statusText.textContent = 'Desconectado';
             qrSection.style.display = 'none';
+            reconnectBtn.style.display = 'inline-block';
             sendButton.disabled = true;
     }
 }
+
+// Manejar reconexión manual
+reconnectBtn.addEventListener('click', async () => {
+    try {
+        reconnectBtn.disabled = true;
+        reconnectBtn.textContent = '🔄 Reconectando...';
+
+        showAlert('🔄 Iniciando reconexión...', 'info');
+
+        const response = await fetch('http://localhost:3000/api/reconnect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('✅ ' + data.message, 'success');
+            // Forzar actualización inmediata del estado
+            setTimeout(() => checkStatus(), 2000);
+        } else {
+            throw new Error(data.error || 'Error al reconectar');
+        }
+    } catch (error) {
+        console.error('Error al reconectar:', error);
+        showAlert('❌ Error: ' + error.message, 'error');
+    } finally {
+        reconnectBtn.disabled = false;
+        reconnectBtn.textContent = '🔄 Reconectar';
+    }
+});
 
 // Iniciar polling
 setInterval(checkStatus, 3000);

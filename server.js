@@ -65,11 +65,30 @@ client.on('authenticated', () => {
 client.on('auth_failure', (msg) => {
   console.error('❌ [EVENT] Error de autenticación:', msg);
   clientStatus = 'disconnected';
+  qrCodeData = null;
+
+  // Limpiar sesión corrupta y reintentar
+  console.log('🧹 Limpiando sesión corrupta...');
+  setTimeout(() => {
+    const fs = require('fs');
+    const path = require('path');
+    const authPath = path.join(__dirname, '.wwebjs_auth');
+
+    if (fs.existsSync(authPath)) {
+      fs.rmSync(authPath, { recursive: true, force: true });
+      console.log('✅ Sesión corrupta eliminada');
+    }
+
+    console.log('🔄 Re-inicializando cliente con sesión limpia...');
+    client.initialize();
+  }, 3000);
 });
 
 client.on('disconnected', (reason) => {
   console.log('🔌 [EVENT] Cliente desconectado:', reason);
   clientStatus = 'disconnected';
+  qrCodeData = null;
+
   setTimeout(() => {
     console.log('🔄 Re-inicializando cliente...');
     client.initialize();
@@ -81,6 +100,48 @@ client.initialize().catch(err => console.error('Error inicial:', err));
 
 app.get('/api/status', (req, res) => {
   res.json({ status: clientStatus, qr: qrCodeData });
+});
+
+// Endpoint para forzar reconexión (útil cuando la sesión está corrupta)
+app.post('/api/reconnect', async (req, res) => {
+  try {
+    console.log('🔄 [API] Solicitud de reconexión manual...');
+
+    // Destruir cliente actual si existe
+    if (client) {
+      try {
+        await client.destroy();
+        console.log('✅ Cliente destruido');
+      } catch (err) {
+        console.log('⚠️ Error al destruir cliente:', err.message);
+      }
+    }
+
+    // Limpiar sesión
+    const fs = require('fs');
+    const path = require('path');
+    const authPath = path.join(__dirname, '.wwebjs_auth');
+
+    if (fs.existsSync(authPath)) {
+      fs.rmSync(authPath, { recursive: true, force: true });
+      console.log('✅ Sesión eliminada');
+    }
+
+    // Resetear estado
+    clientStatus = 'loading';
+    qrCodeData = null;
+
+    // Reinicializar
+    setTimeout(() => {
+      console.log('🚀 Re-inicializando cliente...');
+      client.initialize();
+    }, 2000);
+
+    res.json({ success: true, message: 'Reconexión iniciada. Espera el nuevo QR.' });
+  } catch (error) {
+    console.error('❌ Error en reconexión:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 app.post('/api/send-messages', async (req, res) => {
