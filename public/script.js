@@ -622,8 +622,18 @@ reconnectBtn.addEventListener('click', async () => {
 
         if (data.success) {
             showAlert('✅ ' + data.message, 'success');
-            // Forzar actualización inmediata del estado
-            setTimeout(() => checkStatus(), 2000);
+
+            // Polling más frecuente para detectar el QR rápidamente
+            let pollCount = 0;
+            const quickPoll = setInterval(() => {
+                checkStatus();
+                pollCount++;
+                // Detener después de 20 intentos (20 segundos)
+                if (pollCount >= 20) {
+                    clearInterval(quickPoll);
+                }
+            }, 1000); // Cada 1 segundo durante 20 segundos
+
         } else {
             throw new Error(data.error || 'Error al reconectar');
         }
@@ -631,8 +641,10 @@ reconnectBtn.addEventListener('click', async () => {
         console.error('Error al reconectar:', error);
         showAlert('❌ Error: ' + error.message, 'error');
     } finally {
-        reconnectBtn.disabled = false;
-        reconnectBtn.textContent = '🔄 Reconectar';
+        setTimeout(() => {
+            reconnectBtn.disabled = false;
+            reconnectBtn.textContent = '🔄 Reconectar';
+        }, 3000); // Mantener deshabilitado por 3 segundos
     }
 });
 

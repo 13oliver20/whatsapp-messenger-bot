@@ -107,37 +107,46 @@ app.post('/api/reconnect', async (req, res) => {
   try {
     console.log('🔄 [API] Solicitud de reconexión manual...');
 
+    // Limpiar sesión PRIMERO
+    const fs = require('fs');
+    const path = require('path');
+    const authPath = path.join(__dirname, '.wwebjs_auth');
+
+    if (fs.existsSync(authPath)) {
+      try {
+        fs.rmSync(authPath, { recursive: true, force: true });
+        console.log('✅ Sesión eliminada');
+      } catch (err) {
+        console.log('⚠️ Error al eliminar sesión:', err.message);
+      }
+    }
+
     // Destruir cliente actual si existe
     if (client) {
       try {
         await client.destroy();
         console.log('✅ Cliente destruido');
       } catch (err) {
-        console.log('⚠️ Error al destruir cliente:', err.message);
+        console.log('⚠️ Error al destruir cliente (continuando):', err.message);
       }
     }
 
-    // Limpiar sesión
-    const fs = require('fs');
-    const path = require('path');
-    const authPath = path.join(__dirname, '.wwebjs_auth');
 
-    if (fs.existsSync(authPath)) {
-      fs.rmSync(authPath, { recursive: true, force: true });
-      console.log('✅ Sesión eliminada');
-    }
 
     // Resetear estado
     clientStatus = 'loading';
     qrCodeData = null;
 
-    // Reinicializar
+    // Reinicializar con manejo de errores
     setTimeout(() => {
       console.log('🚀 Re-inicializando cliente...');
-      client.initialize();
-    }, 2000);
+      client.initialize().catch(err => {
+        console.error('❌ Error al inicializar:', err);
+        clientStatus = 'disconnected';
+      });
+    }, 3000);
 
-    res.json({ success: true, message: 'Reconexión iniciada. Espera el nuevo QR.' });
+    res.json({ success: true, message: 'Reconexión iniciada. El QR aparecerá en 10-15 segundos.' });
   } catch (error) {
     console.error('❌ Error en reconexión:', error);
     res.status(500).json({ success: false, error: error.message });
