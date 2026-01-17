@@ -45,9 +45,16 @@ const client = new Client({
 
 client.on('qr', (qr) => {
   console.log('📱 [EVENT] QR Generado. Esperando escaneo...');
+  console.log('🔍 Longitud del QR:', qr.length);
   qrcode.toDataURL(qr, (err, url) => {
+    if (err) {
+      console.error('❌ Error al convertir QR a DataURL:', err);
+      return;
+    }
     qrCodeData = url;
     clientStatus = 'qr_ready';
+    console.log('✅ QR convertido a DataURL exitosamente');
+    console.log('📊 Estado actualizado a: qr_ready');
   });
 });
 
@@ -95,10 +102,32 @@ client.on('disconnected', (reason) => {
   }, 5000);
 });
 
+// Limpiar sesión corrupta al inicio si existe
+const fs = require('fs');
+const path = require('path');
+const authPath = path.join(__dirname, '.wwebjs_auth');
+
+console.log('🔍 Verificando sesión existente...');
+if (fs.existsSync(authPath)) {
+  console.log('⚠️ Sesión anterior encontrada. Eliminando para generar QR fresco...');
+  try {
+    fs.rmSync(authPath, { recursive: true, force: true });
+    console.log('✅ Sesión anterior eliminada');
+  } catch (err) {
+    console.log('⚠️ Error al eliminar sesión:', err.message);
+  }
+}
+
 console.log('🚀 Inicializando cliente...');
-client.initialize().catch(err => console.error('Error inicial:', err));
+clientStatus = 'loading';
+client.initialize().catch(err => {
+  console.error('❌ Error inicial:', err);
+  clientStatus = 'disconnected';
+});
 
 app.get('/api/status', (req, res) => {
+  const hasQR = qrCodeData ? 'Sí' : 'No';
+  console.log(`📊 [API] Status solicitado - Estado: ${clientStatus}, QR disponible: ${hasQR}`);
   res.json({ status: clientStatus, qr: qrCodeData });
 });
 
