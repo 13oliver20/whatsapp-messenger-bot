@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
-const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,33 +27,47 @@ let chromiumPath = process.env.CHROME_PATH;
 
 if (!chromiumPath || !fs.existsSync(chromiumPath)) {
   console.log('🔍 Buscando Chromium...');
-  const possiblePaths = [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome',
-    '/nix/store/*-chromium-*/bin/chromium'
-  ];
 
-  for (const path of possiblePaths) {
-    try {
-      if (path.includes('*')) {
-        // Usar glob para rutas con wildcard
-        const result = execSync(`ls ${path} 2>/dev/null || echo ""`, { encoding: 'utf8' }).trim();
-        if (result) {
-          chromiumPath = result.split('\n')[0];
-          break;
+  // Intentar buscar en /nix/store (Railway/nixpacks)
+  try {
+    const nixStoreDir = '/nix/store';
+    if (fs.existsSync(nixStoreDir)) {
+      console.log('📁 Buscando en /nix/store...');
+      const entries = fs.readdirSync(nixStoreDir);
+      const chromiumDir = entries.find(entry => entry.includes('chromium') && !entry.includes('.drv'));
+      if (chromiumDir) {
+        const possiblePath = `${nixStoreDir}/${chromiumDir}/bin/chromium`;
+        console.log('🔍 Verificando:', possiblePath);
+        if (fs.existsSync(possiblePath)) {
+          chromiumPath = possiblePath;
+          console.log('✅ Chromium encontrado en nix store');
         }
-      } else if (fs.existsSync(path)) {
+      }
+    }
+  } catch (err) {
+    console.log('⚠️ Error buscando en /nix/store:', err.message);
+  }
+
+  // Fallback a rutas estándar
+  if (!chromiumPath) {
+    console.log('📁 Buscando en rutas estándar...');
+    const standardPaths = [
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/google-chrome'
+    ];
+
+    for (const path of standardPaths) {
+      if (fs.existsSync(path)) {
         chromiumPath = path;
+        console.log('✅ Chromium encontrado en:', path);
         break;
       }
-    } catch (err) {
-      // Continuar buscando
     }
   }
 }
 
-console.log('🌐 Chromium path:', chromiumPath || 'NO ENCONTRADO');
+console.log('🌐 Chromium path final:', chromiumPath || 'NO ENCONTRADO');
 
 const client = new Client({
   authStrategy: new LocalAuth(),
