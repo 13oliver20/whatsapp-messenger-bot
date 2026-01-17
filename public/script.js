@@ -373,7 +373,7 @@ messageForm.addEventListener('submit', async (e) => {
             });
 
             // Enviar petición al backend
-            const response = await fetch('http://localhost:3000/api/send-messages', {
+            const response = await fetch('/api/send-messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -559,7 +559,7 @@ document.head.appendChild(style);
 
 async function checkStatus() {
     try {
-        const response = await fetch('http://localhost:3000/api/status');
+        const response = await fetch('/api/status');
         const data = await response.json();
 
         updateConnectionUI(data.status, data.qr);
@@ -611,7 +611,7 @@ reconnectBtn.addEventListener('click', async () => {
 
         showAlert('🔄 Iniciando reconexión...', 'info');
 
-        const response = await fetch('http://localhost:3000/api/reconnect', {
+        const response = await fetch('/api/reconnect', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -643,4 +643,4 @@ checkStatus();
 // Cargar mensajes al iniciar
 loadMessages();
 console.log('✅ WhatsApp Messenger cargado correctamente');
-console.log('📡 Backend esperado en: http://localhost:3000');
+console.log('📡 Backend: ' + window.location.origin);
