@@ -4,6 +4,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
+const fs = require('fs');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +23,39 @@ console.log('📦 Iniciando configuración del cliente WhatsApp...');
 const WAP_VERSION = '2.2412.54';
 const REMOTE_PATH = `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${WAP_VERSION}.html`;
 
+// Buscar Chromium en múltiples ubicaciones
+let chromiumPath = process.env.CHROME_PATH;
+
+if (!chromiumPath || !fs.existsSync(chromiumPath)) {
+  console.log('🔍 Buscando Chromium...');
+  const possiblePaths = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome',
+    '/nix/store/*-chromium-*/bin/chromium'
+  ];
+
+  for (const path of possiblePaths) {
+    try {
+      if (path.includes('*')) {
+        // Usar glob para rutas con wildcard
+        const result = execSync(`ls ${path} 2>/dev/null || echo ""`, { encoding: 'utf8' }).trim();
+        if (result) {
+          chromiumPath = result.split('\n')[0];
+          break;
+        }
+      } else if (fs.existsSync(path)) {
+        chromiumPath = path;
+        break;
+      }
+    } catch (err) {
+      // Continuar buscando
+    }
+  }
+}
+
+console.log('🌐 Chromium path:', chromiumPath || 'NO ENCONTRADO');
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   webVersionCache: {
@@ -28,7 +63,7 @@ const client = new Client({
     remotePath: REMOTE_PATH
   },
   puppeteer: {
-    executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+    executablePath: chromiumPath,
     headless: true,
     args: [
       '--no-sandbox',

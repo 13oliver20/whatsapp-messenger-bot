@@ -3,11 +3,10 @@ nixPkgs = ["...", "chromium", "glib", "nss", "nspr", "atk", "at-spi2-atk", "libd
 
 [variables]
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+CHROME_PATH = "/nix/store/*-chromium-*/bin/chromium"
 
 [phases.build]
 cmds = ["npm install"]
 
 [start]
 cmd = "node server.js"
-
-# Final library fix for Chromium
